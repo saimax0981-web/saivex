@@ -1,0 +1,17 @@
+flask
+flask-login
+flask-sqlalchemy
+werkzeug
+requests
+ddgs
+pymupdf
+python-docx
+python-pptx
+reportlab
+openpyxl
+pillow
+gunicorn
+psycopg2-binary
+python-dotenv
+authlib
+flask-migrate

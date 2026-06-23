@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Saivex Signup</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    height:100vh;
+    background:linear-gradient(135deg,#020617,#071b34,#0f172a);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:Poppins,sans-serif;
+    color:white;
+}
+
+.card{
+    width:420px;
+    padding:35px;
+    border-radius:25px;
+    background:rgba(255,255,255,.08);
+    backdrop-filter:blur(25px);
+    box-shadow:0 0 40px rgba(0,212,255,.25);
+    text-align:center;
+}
+
+.logo{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    object-fit:cover;
+    box-shadow:0 0 30px #00d4ff;
+    margin-bottom:15px;
+}
+
+h1{
+    font-family:Orbitron,sans-serif;
+    letter-spacing:4px;
+    margin-bottom:25px;
+    text-shadow:0 0 20px #00d4ff;
+}
+
+input{
+    width:100%;
+    padding:16px;
+    margin-bottom:15px;
+    border:none;
+    outline:none;
+    border-radius:15px;
+    background:rgba(255,255,255,.12);
+    color:white;
+    font-size:16px;
+}
+
+input::placeholder{
+    color:#cbd5e1;
+}
+
+button{
+    width:100%;
+    padding:16px;
+    border:none;
+    border-radius:15px;
+    background:linear-gradient(90deg,#00d4ff,#2563eb);
+    color:white;
+    font-size:17px;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+a{
+    color:#00d4ff;
+    text-decoration:none;
+    display:block;
+    margin-top:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<img src="{{ url_for('static', filename='logo.png') }}" class="logo">
+
+<h1>JOIN SAIVEX</h1>
+
+<form method="POST">
+
+<input name="name" placeholder="Your Name" required>
+
+<input name="email" placeholder="Email" required>
+
+<input name="password" type="password" placeholder="Password" required>
+
+<button type="submit">Create Account</button>
+
+</form>
+
+<a href="/login">Already have an account? Login</a>
+
+</div>
+
+</body>
+</html>

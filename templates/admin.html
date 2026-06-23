@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SAIVEX Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{margin:0;font-family:Arial;background:#080300;color:#fff7d6;padding:22px}
+h1{color:#ffdf8a}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:rgba(255,196,77,.08);border:1px solid rgba(255,196,77,.25);border-radius:18px;padding:20px}
+.num{font-size:34px;font-weight:bold;color:#ffbf3c}
+a{color:#ffdf8a}
+</style>
+</head>
+<body>
+<h1>👑 SAIVEX Admin Dashboard</h1>
+<p><a href="/">Back to SAIVEX</a></p>
+<div class="grid">
+  <div class="card"><h3>Users</h3><div class="num">{{ users }}</div></div>
+  <div class="card"><h3>Conversations</h3><div class="num">{{ conversations }}</div></div>
+  <div class="card"><h3>Messages</h3><div class="num">{{ messages }}</div></div>
+  <div class="card"><h3>Memories</h3><div class="num">{{ memories }}</div></div>
+  <div class="card"><h3>Documents</h3><div class="num">{{ documents }}</div></div>
+  <div class="card"><h3>Images</h3><div class="num">{{ images }}</div></div>
+</div>
+</body>
+</html>

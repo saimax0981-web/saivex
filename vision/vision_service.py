@@ -1,3 +1,4 @@
+
 import os
 import re
 import base64
@@ -7,15 +8,11 @@ from PIL import Image, ImageStat
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-VISION_MODEL = os.environ.get(
-    "SAIVEX_VISION_MODEL",
-    "qwen/qwen2.5-vl-72b-instruct"
-)
+VISION_MODEL = os.environ.get("SAIVEX_VISION_MODEL", "qwen/qwen2.5-vl-72b-instruct")
 
 
 def get_openrouter_key():
     key = os.environ.get("OPENROUTER_API_KEY")
-
     if key:
         return key
 
@@ -36,13 +33,31 @@ def get_openrouter_key():
             r"(sk-or-[A-Za-z0-9_\-]+|sk-proj-[A-Za-z0-9_\-]+|sk-[A-Za-z0-9_\-]+)",
             text
         )
-
         if match:
             return match.group(1)
     except Exception:
         pass
 
     return ""
+
+
+def compress_image_for_api(path):
+    image = Image.open(path).convert("RGB")
+    max_side = 1280
+    width, height = image.size
+
+    if max(width, height) > max_side:
+        if width >= height:
+            new_width = max_side
+            new_height = int(height * (max_side / width))
+        else:
+            new_height = max_side
+            new_width = int(width * (max_side / height))
+        image = image.resize((new_width, new_height))
+
+    temp_path = path + "_vision.jpg"
+    image.save(temp_path, "JPEG", quality=82)
+    return temp_path, "jpeg"
 
 
 def image_to_base64(path):
@@ -72,55 +87,52 @@ def local_image_analysis(path, filename):
     elif b > r and b > g:
         dominant = "blue / cool tone"
 
-    return f"""Local image analysis:
+    return f"""I can see the image file, but the online Vision AI could not complete the analysis.
+
+Local fallback details:
 File: {filename}
 Resolution: {width} x {height}
 Orientation: {orientation}
 Brightness: {brightness}
 Dominant tone: {dominant}
 
-Note:
-Real AI vision could not run, so this is the fallback analysis.
-Check your OpenRouter API key, internet connection, model access, or credits.
+To get ChatGPT-like image understanding:
+1. Check OPENROUTER_API_KEY
+2. Check model access/credits
+3. Try a smaller image
+4. Try setting SAIVEX_VISION_MODEL to another supported vision model
 """
 
 
 def analyze_image_with_ai(path, filename, user_question="Explain this image clearly."):
     api_key = get_openrouter_key()
-
     if not api_key:
         return local_image_analysis(path, filename)
 
     try:
-        image = Image.open(path)
-        image_format = image.format.lower() if image.format else "jpeg"
-
-        if image_format == "jpg":
-            image_format = "jpeg"
-
-        image_base64 = image_to_base64(path)
+        compressed_path, image_format = compress_image_for_api(path)
+        image_base64 = image_to_base64(compressed_path)
 
         prompt = f"""
-You are Saivex Vision, a multimodal AI assistant.
+You are SAIVEX Vision, a ChatGPT-like multimodal AI assistant.
 
 User request:
 {user_question}
 
-Analyze the uploaded image clearly.
+Analyze the uploaded image deeply and naturally.
 
-Return:
-1. Short title
-2. Clear description
-3. Main objects, people, or scene
-4. Any visible text
-5. If it is a screenshot, explain what is happening
-6. If it is code, find possible errors
-7. If it is math, solve it step by step
-8. If it is a chart or graph, explain the trend
-9. If it is historical or Kalinga-related, explain historical or cultural meaning
-10. Useful suggestions
+Rules:
+- Do NOT identify real people by name.
+- If a person is visible, describe them generally.
+- If it is a screenshot, explain what the screen shows.
+- If it has text, read and summarize the visible text.
+- If it is a code screenshot, identify likely issues.
+- If it is math, solve it step by step.
+- If it is a chart or graph, explain the trend.
+- If it is historical or Kalinga-related, explain cultural/historical meaning.
+- Avoid boring metadata unless asked.
 
-Do not identify real people by name.
+Return a helpful answer like ChatGPT Vision.
 """
 
         response = requests.post(
@@ -133,7 +145,7 @@ Do not identify real people by name.
             },
             json={
                 "model": VISION_MODEL,
-                "max_tokens": 1200,
+                "max_tokens": 900,
                 "messages": [
                     {
                         "role": "user",
@@ -169,8 +181,11 @@ Do not identify real people by name.
 def answer_question_about_latest_image(image_analysis, question):
     api_key = get_openrouter_key()
 
+    if not image_analysis:
+        return "Please upload an image first using the 👁️ button or Camera button."
+
     if not api_key:
-        return f"""I can answer based on the stored image analysis.
+        return f"""I can answer based on stored image context.
 
 Question:
 {question}
@@ -190,15 +205,15 @@ Stored image context:
             },
             json={
                 "model": "openai/gpt-4o-mini",
-                "max_tokens": 800,
+                "max_tokens": 700,
                 "messages": [
                     {
                         "role": "system",
-                        "content": "You are Saivex Vision Chat. Answer using the stored image analysis."
+                        "content": "You are SAIVEX Vision Chat. Answer only using the stored image analysis. Be clear and natural."
                     },
                     {
                         "role": "user",
-                        "content": f"Image analysis:\n{image_analysis}\n\nUser question:\n{question}"
+                        "content": f"Stored image analysis:\\n{image_analysis}\\n\\nUser question:\\n{question}"
                     }
                 ]
             },

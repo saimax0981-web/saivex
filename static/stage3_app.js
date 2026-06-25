@@ -1,6 +1,7 @@
 let conversations = [];
 let activeConversationId = null;
 let lastUserMessage = "";
+let typingStopped = false;
 
 function toggleSidebar(){
     document.getElementById("sidebar").classList.toggle("open");
@@ -29,6 +30,7 @@ function formatMessage(text){
         .replaceAll("&","&amp;")
         .replaceAll("<","&lt;")
         .replaceAll(">","&gt;")
+        .replace(/\*\*(.*?)\*\*/g,"<b>$1</b>")
         .replace(/\n/g,"<br>");
 }
 
@@ -39,9 +41,7 @@ function addUserMessage(message){
     chatbox.scrollTop = chatbox.scrollHeight;
 }
 
-function addBotMessage(message, image="", file="", preview=""){
-    hideEmptyState();
-
+function mediaHTML(image="", file="", preview=""){
     let extra = "";
 
     if(image){
@@ -60,9 +60,23 @@ function addBotMessage(message, image="", file="", preview=""){
         extra += `</div>`;
     }
 
+    return extra;
+}
+
+function addBotMessage(message, image="", file="", preview=""){
+    hideEmptyState();
     let chatbox = document.getElementById("chatbox");
-    chatbox.innerHTML += `<div class="message-row"><div class="bot">${formatMessage(message)}${extra}</div></div>`;
+    chatbox.innerHTML += `<div class="message-row"><div class="bot">${formatMessage(message)}${mediaHTML(image,file,preview)}</div></div>`;
     chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+function addBotShell(){
+    hideEmptyState();
+    let id = "bot_" + Date.now();
+    let chatbox = document.getElementById("chatbox");
+    chatbox.innerHTML += `<div class="message-row"><div class="bot" id="${id}"><span class="thinking">SAIVEX Brain 2.0 is thinking...</span></div></div>`;
+    chatbox.scrollTop = chatbox.scrollHeight;
+    return id;
 }
 
 function removeLastBot(){
@@ -72,6 +86,32 @@ function removeLastBot(){
     }
 }
 
+async function typeBotText(id, text, image="", file="", preview=""){
+    typingStopped = false;
+    let box = document.getElementById(id);
+    if(!box){
+        addBotMessage(text, image, file, preview);
+        return;
+    }
+
+    let output = "";
+    for(let i=0; i<text.length; i++){
+        if(typingStopped) break;
+        output += text[i];
+        box.innerHTML = formatMessage(output);
+        document.getElementById("chatbox").scrollTop = document.getElementById("chatbox").scrollHeight;
+        await new Promise(r => setTimeout(r, 5));
+    }
+
+    if(!typingStopped){
+        box.innerHTML = formatMessage(text) + mediaHTML(image, file, preview);
+    }
+}
+
+function stopTyping(){
+    typingStopped = true;
+}
+
 async function sendMessage(){
     let input = document.getElementById("message");
     let msg = input.value.trim();
@@ -79,11 +119,10 @@ async function sendMessage(){
     if(!msg) return;
 
     lastUserMessage = msg;
-
     addUserMessage(msg);
     input.value = "";
 
-    addBotMessage("Saivex is thinking...");
+    let botId = addBotShell();
 
     try{
         let response = await fetch("/chat", {
@@ -99,11 +138,9 @@ async function sendMessage(){
 
         let data = await response.json();
 
-        removeLastBot();
-
         activeConversationId = data.conversation_id;
 
-        addBotMessage(data.reply, data.image, data.file_url, data.preview_url);
+        await typeBotText(botId, data.reply, data.image, data.file_url, data.preview_url);
 
         speakText(data.reply);
 
@@ -112,9 +149,9 @@ async function sendMessage(){
         loadDocuments();
 
     }catch(error){
-        removeLastBot();
-        addBotMessage("Something went wrong. Please check the terminal error.");
         console.log(error);
+        let box = document.getElementById(botId);
+        if(box) box.innerHTML = "Something went wrong. Please check the terminal.";
     }
 }
 
@@ -162,7 +199,8 @@ async function handleFileUpload(){
     let file = input.files[0];
 
     addUserMessage("Uploaded document: " + file.name);
-    addBotMessage("Reading your file...");
+
+    let botId = addBotShell();
 
     let formData = new FormData();
     formData.append("file", file);
@@ -175,16 +213,15 @@ async function handleFileUpload(){
 
         let data = await response.json();
 
-        removeLastBot();
-        addBotMessage(data.reply);
+        await typeBotText(botId, data.reply);
 
         input.value = "";
 
         loadDocuments();
     }catch(error){
-        removeLastBot();
-        addBotMessage("Document upload failed.");
         console.log(error);
+        let box = document.getElementById(botId);
+        if(box) box.innerHTML = "Document upload failed.";
     }
 }
 
@@ -196,7 +233,8 @@ async function handleImageUpload(){
     let image = input.files[0];
 
     addUserMessage("Uploaded image: " + image.name);
-    addBotMessage("Saivex Vision is analyzing your image...");
+
+    let botId = addBotShell();
 
     let formData = new FormData();
     formData.append("image", image);
@@ -209,18 +247,18 @@ async function handleImageUpload(){
 
         let data = await response.json();
 
-        removeLastBot();
+        activeConversationId = data.conversation_id;
 
-        addBotMessage(data.reply, data.image);
+        await typeBotText(botId, data.reply, data.image);
 
         input.value = "";
 
         loadConversations();
 
     }catch(error){
-        removeLastBot();
-        addBotMessage("Image upload failed. Please check your terminal.");
         console.log(error);
+        let box = document.getElementById(botId);
+        if(box) box.innerHTML = "Image upload failed.";
     }
 }
 
@@ -236,15 +274,21 @@ function renderConversations(){
 
     panel.innerHTML = "";
 
-    conversations
-        .filter(c => c.title.toLowerCase().includes(search) || c.folder.toLowerCase().includes(search))
-        .forEach(c => {
-            panel.innerHTML += `
-            <div class="conversation-item" onclick="openConversation(${c.id})">
-                <span>${c.icon}</span>
-                <span class="conv-title">${c.title}</span>
-            </div>`;
-        });
+    let filtered = conversations.filter(c => c.title.toLowerCase().includes(search) || c.folder.toLowerCase().includes(search));
+
+    if(filtered.length === 0){
+        panel.innerHTML = `<div class="conversation-item">No chats found.</div>`;
+        return;
+    }
+
+    filtered.forEach(c => {
+        let active = c.id === activeConversationId ? " active" : "";
+        panel.innerHTML += `
+        <div class="conversation-item${active}" onclick="openConversation(${c.id})">
+            <span>${c.icon}</span>
+            <span class="conv-title">${c.title}</span>
+        </div>`;
+    });
 }
 
 async function openConversation(id){
@@ -264,6 +308,7 @@ async function openConversation(id){
     });
 
     closeSidebarMobile();
+    renderConversations();
 }
 
 async function newChat(){
@@ -275,7 +320,7 @@ async function newChat(){
     document.getElementById("chatbox").innerHTML = `
     <div class="empty-state" id="emptyState">
         <h2>New Chat</h2>
-        <p>Start a new conversation with Saivex.</p>
+        <p>Start a new conversation with SAIVEX Brain 2.0.</p>
     </div>`;
 
     loadConversations();
@@ -284,6 +329,8 @@ async function newChat(){
 
 async function clearHistory(){
     if(!activeConversationId) return;
+
+    if(!confirm("Delete this chat?")) return;
 
     await fetch("/delete_conversation/" + activeConversationId, {method:"POST"});
 
@@ -307,7 +354,7 @@ async function loadMemories(){
     data.forEach(m => {
         panel.innerHTML += `
         <div class="memory-box">
-            <div class="memory-text">${m.value}</div>
+            <div class="memory-text">${formatMessage(m.value)}</div>
             <button class="delete-memory" onclick="deleteMemory(${m.id})">x</button>
         </div>`;
     });
@@ -333,7 +380,7 @@ async function loadDocuments(){
     data.forEach(d => {
         panel.innerHTML += `
         <div class="document-box">
-            <div class="document-text">${d.filename}</div>
+            <div class="document-text">${formatMessage(d.filename)}</div>
             <button class="delete-document" onclick="deleteDocument(${d.id})">x</button>
         </div>`;
     });
@@ -348,9 +395,10 @@ function toolPrompt(type){
     if(type === "ppt") setPrompt("create ppt about ");
     if(type === "pdf") setPrompt("create pdf about ");
     if(type === "website") setPrompt("create website for ");
-    if(type === "code") setPrompt("run code: print('Hello from Saivex')");
+    if(type === "code") setPrompt("run code: print('Hello from SAIVEX Brain 2.0')");
     if(type === "search") setPrompt("search: ");
     if(type === "vision") setPrompt("explain my uploaded image");
+    if(type === "agent") setPrompt("agent: ");
 }
 
 document.getElementById("message").addEventListener("keydown", function(e){

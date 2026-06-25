@@ -1,0 +1,16 @@
+{
+  "name":"SAIVEX",
+  "short_name":"SAIVEX",
+  "display":"standalone",
+  "start_url":"/",
+  "background_color":"#0b0602",
+  "theme_color":"#d8a437",
+  "orientation":"portrait",
+  "icons":[
+    {
+      "src":"/static/logo.png",
+      "sizes":"512x512",
+      "type":"image/png"
+    }
+  ]
+}

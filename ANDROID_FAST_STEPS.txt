@@ -1,0 +1,18 @@
+SAIVEX ANDROID FAST STEPS
+
+After your website is live:
+
+1. Open Android Studio.
+2. Open your android/SaivexAndroid project or SaivexAndroid folder.
+3. Open app/build.gradle.
+4. Change SAIVEX_URL to:
+
+buildConfigField "String", "SAIVEX_URL", "\"https://YOUR_USERNAME.pythonanywhere.com\""
+
+5. Build APK:
+   Build -> Build Bundle(s) / APK(s) -> Build APK(s)
+
+6. Build AAB for Play Store:
+   Build -> Generate Signed Bundle / APK -> Android App Bundle
+
+Google Play Store requires a paid developer account. Testing APK on your phone is free.

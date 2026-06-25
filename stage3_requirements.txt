@@ -1,5 +1,0 @@
-python-pptx
-reportlab
-openpyxl
-python-docx
-ddgs

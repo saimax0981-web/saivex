@@ -39,9 +39,6 @@ database_url = os.getenv(
     app.config.get("SQLALCHEMY_DATABASE_URI", "sqlite:///instance/saivex.db")
 )
 
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
-
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["MAX_CONTENT_LENGTH"] = int(os.getenv("SAIVEX_MAX_UPLOAD_MB", "100")) * 1024 * 1024
@@ -84,7 +81,7 @@ def production_status():
             "secure_headers",
             "logging",
             "gunicorn_ready",
-            "sqlite_now_postgresql_later"
+            "sqlite_only"
         ]
     }
 

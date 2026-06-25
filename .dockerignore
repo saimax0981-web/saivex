@@ -1,0 +1,16 @@
+.env
+__pycache__/
+*.pyc
+*.db
+*.sqlite
+*.sqlite3
+instance/
+uploads/
+static/generated/
+logs/
+android/
+desktop/
+*.exe
+*.apk
+*.aab
+*.zip

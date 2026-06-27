@@ -1,38 +1,25 @@
-# Python
+.env
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.Python
 venv/
 .venv/
 env/
-
-# Secrets
-.env
-*.key
-*.pem
-firebase-service-account.json
-
-# Database
 instance/
 *.db
 *.sqlite
 *.sqlite3
-
-# Runtime files
 uploads/
 static/generated/
 logs/
 *.log
-voice.wav
-memory.json
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Android build outputs
-android/**/build/
-SaivexAndroid/**/build/
+*.zip
+*.rar
+*.7z
+*.exe
 *.apk
 *.aab
+.DS_Store
+Thumbs.db

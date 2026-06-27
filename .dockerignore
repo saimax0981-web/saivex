@@ -1,6 +1,16 @@
 .env
+.git/
+.gitignore
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.env/
+.venv/
+env/
+node_modules/
 *.db
 *.sqlite
 *.sqlite3
@@ -14,3 +24,7 @@ desktop/
 *.apk
 *.aab
 *.zip
+*.rar
+*.7z
+.DS_Store
+Thumbs.db

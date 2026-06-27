@@ -10,12 +10,14 @@ def setup_logging(app):
         "logs/saivex.log",
         maxBytes=1_000_000,
         backupCount=5,
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     handler.setLevel(logging.INFO)
     handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s: %(message)s"))
 
-    app.logger.addHandler(handler)
+    if not any(isinstance(h, RotatingFileHandler) for h in app.logger.handlers):
+        app.logger.addHandler(handler)
+
     app.logger.setLevel(logging.INFO)
     app.logger.info("SAIVEX production logging started")

@@ -4,6 +4,6 @@ def add_security_headers(response):
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "camera=(self), microphone=(self), geolocation=()"
 
-    # Do not add strict CSP yet because SAIVEX loads some external scripts/fonts.
-    # We can add a carefully tuned CSP during deployment.
+    # Do not add a strict CSP yet because SAIVEX currently loads external fonts/scripts
+    # and uses browser features like camera/microphone. We can tune CSP after deployment.
     return response

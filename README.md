@@ -7,6 +7,17 @@ SAIVEX is an AI platform designed to bring multiple AI capabilities
 together in a single application. It combines conversational AI,
 productivity tools, creative generation, voice interaction, and a
 futuristic Kalinga-inspired interface.
+# 🎬 Official Launch Trailer
+
+<p align="center">
+<a href="https://youtu.be/EjDkpvuMxTw">
+<img src="assets/thumbnail.png" width="100%">
+</a>
+</p>
+
+<p align="center">
+<b>▶ Click the thumbnail to watch the Official SAIVEX Launch Trailer</b>
+</p>
 
 ## ✨ Features
 
